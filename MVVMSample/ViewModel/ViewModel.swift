@@ -27,9 +27,15 @@ class ViewModel {
 
     // 取得状態を扱うオブジェクト
     @Published private(set) var state: State?
+    // フィルターのタイトルを画面側で監視するためのオブジェクト
+    @Published private(set) var title: String? = FilterType.none.title
 
     // 現在のフィルター状態を保持
-    private(set) var filterType: FilterType = .none
+    private var filterType: FilterType = .none {
+        didSet {
+            title = filterType.title
+        }
+    }
 
     // テストのためにModelクラスをDIする
     private let model: ModelProtocol

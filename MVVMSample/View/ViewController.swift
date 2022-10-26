@@ -29,7 +29,7 @@ class ViewController: UIViewController {
         tableView.refreshControl = UIRefreshControl()
         tableView.refreshControl?.addTarget(self, action: #selector(refresh(sender:)), for: .valueChanged)
 
-        // 状態監視
+        // 通信状態の監視
         viewModel.$state
             .dropFirst()
             .receive(on: DispatchQueue.main)
@@ -47,9 +47,13 @@ class ViewController: UIViewController {
                 }
             }
             .store(in: &cancellables)
-        
+        // フィルター変更によるタイトルの監視
+        viewModel.$title
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.title, on: self)
+            .store(in: &cancellables)
+
         // 初回ロード
-        title = viewModel.filterType.title
         Task {
             await viewModel.load(for: .none)
         }
@@ -112,7 +116,6 @@ extension ViewController {
         let actionSheet = UIAlertController(title: "トピック", message: nil, preferredStyle: UIAlertController.Style.actionSheet)
         for filterType in FilterType.allCases {
             let action = UIAlertAction(title: filterType.title, style: UIAlertAction.Style.default) { [weak self] _ in
-                self?.title = self?.viewModel.filterType.title
                 Task {
                     await self?.viewModel.load(for: filterType)
                 }
